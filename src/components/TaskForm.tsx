@@ -1,0 +1,13 @@
+import { useEffect, useState } from 'react'
+import type { Category, Priority, Task } from '../types'
+import { localDateKey } from '../utils/date'
+import { Button, Input, Modal, Select, Textarea } from './UI'
+
+const categories: Category[] = ['Study','Assignment','Research','Competition','Organization','Career','Personal']
+const priorities: Priority[] = ['High','Medium','Low']
+export function TaskForm({ open, onClose, initial, onSave }: { open:boolean; onClose:()=>void; initial?:Task|null; onSave:(value:{title:string;description:string;category:Category;deadline:string;priority:Priority;status:Task['status']})=>void }) {
+  const [title,setTitle]=useState('');const[description,setDescription]=useState('');const[category,setCategory]=useState<Category>('Assignment');const[deadline,setDeadline]=useState(localDateKey());const[priority,setPriority]=useState<Priority>('Medium');const[status,setStatus]=useState<Task['status']>('To Do');const[error,setError]=useState('')
+  useEffect(()=>{if(open){setTitle(initial?.title||'');setDescription(initial?.description||'');setCategory(initial?.category||'Assignment');setDeadline(initial?.deadline||localDateKey());setPriority(initial?.priority||'Medium');setStatus(initial?.status||'To Do');setError('')}},[open,initial])
+  const save=()=>{if(!title.trim())return setError('Judul tugas wajib diisi.');if(!/^\d{4}-\d{2}-\d{2}$/.test(deadline))return setError('Masukkan deadline yang valid.');onSave({title:title.trim(),description:description.trim(),category,deadline,priority,status});onClose()}
+  return <Modal open={open} onClose={onClose} title={initial?'Edit tugas':'Tambah tugas'}><div className="space-y-4"><Input label="Judul tugas" value={title} onChange={e=>{setTitle(e.target.value);setError('')}} placeholder="Contoh: Makalah Kearsipan Digital"/><Textarea label="Deskripsi" value={description} onChange={e=>setDescription(e.target.value)} placeholder="Catatan tambahan..."/><div className="grid gap-4 sm:grid-cols-2"><Select label="Kategori" value={category} onChange={e=>setCategory(e.target.value as Category)}>{categories.map(x=><option key={x}>{x}</option>)}</Select><Select label="Prioritas" value={priority} onChange={e=>setPriority(e.target.value as Priority)}>{priorities.map(x=><option key={x}>{x}</option>)}</Select><Input label="Deadline" type="date" value={deadline} onChange={e=>setDeadline(e.target.value)}/><Select label="Status" value={status} onChange={e=>setStatus(e.target.value as Task['status'])}><option>To Do</option><option>In Progress</option><option>Completed</option></Select></div>{error&&<p className="text-sm text-red-600">{error}</p>}<Button className="w-full" onClick={save}>{initial?'Simpan perubahan':'Tambah Tugas'}</Button></div></Modal>
+}
